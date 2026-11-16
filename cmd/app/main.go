@@ -1,0 +1,11 @@
+ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
+defer stop()
+go func() { _ = httpSrv.ListenAndServe() }()
+srv.SetReady(true)
+
+<-ctx.Done()
+srv.SetReady(false)          
+time.Sleep(5 * time.Second)
+shutdownCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+defer cancel()
+_ = httpSrv.Shutdown(shutdownCtx) 
