@@ -1,0 +1,6 @@
+namespace: argocd
+resources:
+  # version figée (v3.6.1) : jamais "stable" ou "latest"
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v3.6.1/manifests/install.yaml
+patches:
+  - path: argocd-cm-patch.yaml   # notre correctif du health check
