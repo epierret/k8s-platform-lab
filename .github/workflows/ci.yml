@@ -1,0 +1,14 @@
+name: ci
+on: {pull_request: {}, push: {branches: [main]}, merge_group: {}}
+permissions:
+  contents: read                # par défaut : lecture seule
+concurrency:
+  group: ci-${{ github.ref }}
+  # sur une PR, un nouveau push annule l'ancienne exécution (inutile de finir un vieux test)
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  pr-title:   # amannn/action-semantic-pull-request@2252a14e810aa9b85c2d560bd7070c802206ecf6 # v6.1.2
+  lint:       # golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0, version v2.15.0
+  test:       # make test  puis  make manifests && git diff --exit-code
+  manifests:  # make validate (kustomize | kubeconform)  +  make policy-test
+  security:   # gitleaks (fetch-depth: 0) + trivy fs + trivy config -> SARIF
