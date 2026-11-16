@@ -3,7 +3,7 @@ ARG GO_VERSION=1.27.4
 FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
 ARG TARGET=app TARGETOS TARGETARCH VERSION=dev COMMIT=none DATE=unknown
 WORKDIR /src
-COPY go.mod go.sum* ./
+COPY ..
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY api/ api/
 COPY cmd/ cmd/
