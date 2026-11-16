@@ -1,0 +1,30 @@
+on:
+  workflow_call:                
+    inputs:
+      target: {type: string, required: true}           # app ou operator
+      version: {type: string, required: false, default: ""}
+    outputs:                    # ce que je renvoie à l'appelant
+      digest: {value: "${{ jobs.build.outputs.digest }}"}
+      image: {value: "${{ jobs.build.outputs.image }}"}
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # pousser sur GHCR avec le GITHUB_TOKEN éphémère
+      id-token: write   # demander le jeton OIDC -> certificat Fulcio (signature sans clé)
+    steps:
+      # checkout, setup-buildx, login ghcr.io, metadata (tags sha-xxx, main, semver)
+      - id: push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          platforms: linux/amd64,linux/arm64   # une image pour PC/serveurs ET pour Mac M/Raspberry
+          build-args: |
+            TARGET=${{ inputs.target }}
+          push: true
+          provenance: false   # sinon des entrées unknown/unknown perturbent scanners et Kyverno
+          cache-from: type=gha,scope=${{ inputs.target }}   # réutiliser le cache GitHub
+          cache-to: type=gha,mode=max,scope=${{ inputs.target }}
+      # trivy image (gate) -> syft SBOM -> cosign sign + attest : leçon 07
