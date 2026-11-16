@@ -1,0 +1,11 @@
+{
+  "$schema": "https://githubusercontent.com",
+  "packages": {
+    ".": {
+      "release-type": "go",
+      "package-name": "k8s-platform-lab",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
+
