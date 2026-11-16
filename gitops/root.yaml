@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  # si on supprime root, Argo CD supprime aussi ce qu'il a créé
+  finalizers: [resources-finalizer.argocd.argoproj.io]
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/epierret/k8s-platform-lab.git
+    targetRevision: main          # on suit la branche main
+    path: gitops/apps             # le dossier des "chapitres"
+  destination: {server: https://kubernetes.default.svc, namespace: argocd}
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    # prune    = supprime du cluster ce qui a disparu de Git
+    # selfHeal = annule les modifications faites à la main
