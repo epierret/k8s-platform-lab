@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    app.kubernetes.io/name: app
+spec:
+  # Pas de replicas : le HPA en est propriétaire
+  revisionHistoryLimit: 3        # garder 3 anciennes versions pour un rollback rapide
+  selector:                      # IMMUABLE : "quels pods m'appartiennent"
+    matchLabels:
+      app.kubernetes.io/name: app
+  strategy:
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}   # on ajoute 1 nouveau pod AVANT d'en retirer un vieux
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: app   # doit correspondre au selector ci-dessus
+    spec:
+      terminationGracePeriodSeconds: 30   # > 5 s de pause + 20 s de drain (leçon 02)
+      serviceAccountName: app
+      automountServiceAccountToken: false   # l'app ne parle pas à l'API Kubernetes : pas de jeton à voler
+      securityContext:
+        runAsNonRoot: true                  # jamais root
+        runAsUser: 65532                    # l'utilisateur nonroot de distroless
+        seccompProfile: {type: RuntimeDefault}   # filtre les appels système dangereux
+      topologySpreadConstraints:            # répartir les pods sur des nœuds différents
+        - {maxSkew: 1, topologyKey: kubernetes.io/hostname, whenUnsatisfiable: ScheduleAnyway,
+           labelSelector: {matchLabels: {app.kubernetes.io/name: app}}}
+      containers:
+        - name: app
+          image: app            # nom générique, réécrit par le bloc "images:" de Kustomize
+          ports: [{name: http, containerPort: 8080}]
+          resources:
+            requests: {cpu: 50m, memory: 32Mi}   # ce qu'on réserve (pour placer le pod)
+            limits: {memory: 64Mi}               # plafond mémoire, PAS de limite CPU
+          startupProbe:   {httpGet: {path: /healthz, port: http}, failureThreshold: 10, periodSeconds: 2}
+          livenessProbe:  {httpGet: {path: /healthz, port: http}, periodSeconds: 10}
+          readinessProbe: {httpGet: {path: /readyz,  port: http}, periodSeconds: 5}
+          securityContext:
+            allowPrivilegeEscalation: false   # impossible de devenir root en cours de route
+            readOnlyRootFilesystem: true      # le disque du conteneur est en lecture seule
+            capabilities: {drop: ["ALL"]}     # on retire tous les "super-pouvoirs" Linux
