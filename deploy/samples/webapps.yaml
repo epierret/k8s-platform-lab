@@ -1,0 +1,26 @@
+apiVersion: platform.enrique-pierret.com/v1alpha1
+kind: WebApp
+metadata:
+  name: levi
+spec:
+  image: ghcr.io/epierret/k8s-platform-lab/app:main
+  replicas: 2
+---
+apiVersion: platform.enrique-pierret.com/v1alpha1
+kind: WebApp
+metadata:
+  name: eren
+spec:
+  image: ghcr.io/epierret/k8s-platform-lab/app:main
+---
+apiVersion: platform.enrique-pierret.com/v1alpha1
+kind: WebApp
+metadata:
+  name: mikasa
+spec:
+  image: ghcr.io/epierret/k8s-platform-lab/app:main
+  replicas: 1
+  # ressources personnalisées : l'opérateur complète seulement ce qui manque
+  resources:
+    requests: {cpu: 100m, memory: 48Mi}
+    limits: {memory: 96Mi}
