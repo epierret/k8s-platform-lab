@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  template:
+    spec:
+      containers:
+        # le conteneur est retrouvé par son nom, seules les ressources changent
+        - name: app
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+            limits: {memory: 128Mi}

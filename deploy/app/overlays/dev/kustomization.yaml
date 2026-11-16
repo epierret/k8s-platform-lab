@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: app-dev
+resources:
+  - ../../base
+# Le bot (leçon 03) remplacera newTag par un digest @sha256:...
+images:
+  - name: app
+    newName: ghcr.io/epierret/k8s-platform-lab/app
+    newTag: main
+patches:
+  # HPA plus petit en dev : 1 à 2 pods
+  - target: {kind: HorizontalPodAutoscaler, name: app}
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2
+  # En dev, on accepte de tomber à 0 pendant une maintenance
+  - target: {kind: PodDisruptionBudget, name: app}
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 0
