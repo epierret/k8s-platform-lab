@@ -1,0 +1,13 @@
+name: setup-go-env
+description: Go toolchain from go.mod + module/build cache + cached envtest binaries.
+runs:
+  using: composite              # "je suis un geste réutilisable", pas un job
+  steps:
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      with:
+        go-version-file: go.mod       # la version de Go est lue dans go.mod (une seule source de vérité)
+        cache-dependency-path: go.sum # le cache est invalidé quand les dépendances changent
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: bin/envtest             # les binaires de test de l'opérateur (leçon 05)
+        key: envtest-${{ runner.os }}-${{ hashFiles('go.sum') }}
