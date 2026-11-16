@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: app
+  labels:
+    app.kubernetes.io/name: app
+spec:
+  minAvailable: 1              # un drain ne peut pas descendre sous 1 pod prêt
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app
+  # Un pod déjà malade (pas prêt) peut toujours être évincé :
+  # sinon il bloquerait la maintenance du nœud pour rien.
+  unhealthyPodEvictionPolicy: AlwaysAllow

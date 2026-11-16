@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+  labels:
+    app.kubernetes.io/name: app
+spec:
+  type: ClusterIP              # joignable seulement depuis l'intérieur du cluster
+  selector:
+    app.kubernetes.io/name: app   # "je répartis le trafic entre les pods qui portent cette étiquette"
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80                 # le port que les clients appellent : http://app
+      targetPort: http         # le port NOMMÉ du conteneur (8080), pas un numéro

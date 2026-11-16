@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Étiquette commune ajoutée aux metadata de tout (sans toucher aux selectors)
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: k8s-platform-lab
+resources:
+  - serviceaccount.yaml
+  - deployment.yaml
+  - service.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - networkpolicy.yaml
+# Pas de namespace ni d'image ici : ce sont les overlays dev/prod qui les fixent.
